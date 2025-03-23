@@ -26,10 +26,11 @@ struct ID_EX ID(struct IF_ID inst) {
     id_ex.pc = inst.pc;
     switch (opcode) {
         case 51: //R-type
+            id_ex.alu_src = 1;
             if (funct3 == 0) {
-                if (funct7 == 0) {
+                if (funct7 == 0) { //add
                     id_ex.alu_op = 0;
-                } else if (funct7 == 32) {
+                } else if (funct7 == 32) {  //sub
                     id_ex.alu_op = 1;
                 }
             }
@@ -37,19 +38,21 @@ struct ID_EX ID(struct IF_ID inst) {
         case 3: //I-type
             if (funct3 == 2) { // lw
                 imm = stoi(str.substr(0, 12), nullptr, 2);
-                id_ex.alu_op = 2;
+                id_ex.alu_op = 0;
+                id_ex.alu_src = 1;
             }
             break;
         case 19: //I-type
             if (funct3 == 0) { // addi
                 imm = stoi(str.substr(0, 12), nullptr, 2);
-                id_ex.alu_op = 3;
+                id_ex.alu_src = 1;
+                id_ex.alu_op = 0;
             }
             break;
         case 35: //S-type
             if (funct3 == 2) { // sw, rs1 is address
                 imm = stoi(str.substr(0, 7) + str.substr(20, 5), nullptr, 2);
-                id_ex.alu_op = 4;
+                id_ex.alu_op = 0;
             }
             break;
         case 111: //rd, imm
@@ -57,7 +60,6 @@ struct ID_EX ID(struct IF_ID inst) {
             id_ex.alu_op = 5;
             break;
     }
-    
     return id_ex;
 }
 
@@ -65,11 +67,26 @@ void EX() {
 
 }
 
-void MEM() {
-
+struct MEM_WB MEM(struct EX_MEM ex_mem) {
+    struct MEM_WB mem_wb;
+    mem_wb.rd = ex_mem.rd;
+    mem_wb.alu_result = ex_mem.alu_result;
+    if (ex_mem.mem_read == 1) {
+        mem_wb.mem_result = 0; //memory[ex_mem.alu_result];
+    } else if (ex_mem.mem_write == 1) {
+        //memory[ex_mem.alu_result] = ex_mem.rd;
+    }
+    return mem_wb;
 }
 
-void WB() {
+void WB(struct MEM_WB mem_wb) {
+    if (mem_wb.mem_to_reg == 1) {
+        if (mem_wb.wb_src == 0) {
+            regs[mem_wb.rd] = mem_wb.alu_result;
+        } else {
+            regs[mem_wb.rd] = mem_wb.mem_result;
+        }
+    }
 
 }
 
