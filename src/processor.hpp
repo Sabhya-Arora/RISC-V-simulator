@@ -2,7 +2,7 @@
 using namespace std;
 
 enum ALU_OP {
-    ADD = 1,
+    ADD = 0,
     SUB,
     AND,
     OR,
@@ -23,12 +23,12 @@ enum ALU_OP {
 };
 
 enum ALU_SRC {
-    RS2 = 1,
+    RS2 = 0,
     IMM
 };
 
 enum WB_SRC {
-    ALU = 1,
+    ALU = 0,
     MEM
 };
 
