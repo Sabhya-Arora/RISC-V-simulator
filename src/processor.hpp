@@ -22,6 +22,16 @@ enum ALU_OP {
     REMU
 };
 
+enum ALU_SRC {
+    RS2 = 1,
+    IMM
+};
+
+enum WB_SRC {
+    ALU = 1,
+    MEM
+};
+
 struct IF_ID {
     int pc;
     string instruction;
