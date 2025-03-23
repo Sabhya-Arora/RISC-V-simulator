@@ -1,30 +1,34 @@
 #include<bits/stdc++.h>
 using namespace std;
 
-enum operations {
-    ADD = 1,
-    SUB,
-    LW,
-    SW,
-    ADDI,
-};
-struct R_type {
-    unsigned int rs1;
-    unsigned int rs2;
-    unsigned int rd;
-    unsigned int operation;
+struct IF_ID {
+    int pc;
+    string instruction;
+} ;
+
+struct ID_EX {
+    int alu_op;
+    int rs1; 
+    int rs2;
+    int rd;
+    int imm;
+    int pc;
+    int alu_src;
+    int branch;
 };
 
-struct I_type {
-    unsigned int rs1;
-    unsigned int rd;
-    unsigned int imm;
-    unsigned int operation;
+struct EX_MEM {
+    int alu_result;
+    int rd;
+    int pc;
+    int mem_read;
+    int mem_write;
 };
 
-struct S_type {
-    unsigned int rs1;
-    unsigned int rs2;
-    unsigned int imm;
-    unsigned int operation;
+struct MEM_WB {
+    int alu_result;
+    int mem_result;
+    int wb_src;
+    int rd;
+    int mem_to_reg;
 };
