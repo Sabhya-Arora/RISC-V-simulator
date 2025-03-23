@@ -1,10 +1,31 @@
 #include<bits/stdc++.h>
 using namespace std;
 
+enum ALU_OP {
+    ADD = 1,
+    SUB,
+    AND,
+    OR,
+    XOR,
+    SLL,
+    SRL,
+    SRA,
+    SLT,
+    SLTU,
+    MUL,
+    MULH,
+    MULHSU,
+    MULHU,
+    DIV,
+    DIVU,
+    REM,
+    REMU
+};
+
 struct IF_ID {
     int pc;
     string instruction;
-} ;
+};
 
 struct ID_EX {
     int alu_op;
