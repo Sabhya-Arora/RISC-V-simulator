@@ -45,7 +45,8 @@ struct ID_EX {
     int imm;
     int pc;
     int alu_src;
-    int branch;
+    int mem_read, mem_write, mem_to_reg;
+    int wb_src;
 };
 
 struct EX_MEM {
@@ -54,6 +55,8 @@ struct EX_MEM {
     int pc;
     int mem_read;
     int mem_write;
+    int mem_to_reg;
+    int wb_src;
 };
 
 struct MEM_WB {
