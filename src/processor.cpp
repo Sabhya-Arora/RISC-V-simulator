@@ -4,7 +4,7 @@ using namespace std;
 vector<string> program;
 vector<string> assembly;
 vector<int> regs(32, 0);
-
+map <int,int> memory;
 
 string IF(int pc) {
     return program[pc];
@@ -63,31 +63,48 @@ struct ID_EX ID(struct IF_ID inst) {
     return id_ex;
 }
 
-void EX() {
-
+struct EX_MEM EX( struct ID_EX id_ex) {
+    struct EX_MEM ex_mem;
+    ex_mem.pc = id_ex.pc;
+    ex_mem.rd = id_ex.rd;
+    ex_mem.mem_read = id_ex.mem_read;
+    ex_mem.mem_write = id_ex.mem_write;
+    ex_mem.mem_to_reg = id_ex.mem_to_reg;
+    ex_mem.wb_src = id_ex.wb_src;
+    int operand1 = regs[id_ex.rs1];
+    int operand2 = (id_ex.alu_src == RS2) ? regs[id_ex.rs2] : id_ex.imm;
+    switch (id_ex.alu_op) {
+        case ADD:
+            ex_mem.alu_result = operand1 + operand2;
+            break;
+        case SUB: 
+            ex_mem.alu_result = operand1 - operand2;
+            break;
+    }
+    return ex_mem;
 }
 
-struct MEM_WB MEM(struct EX_MEM ex_mem) {
+struct MEM_WB DM ( struct EX_MEM ex_mem) {
     struct MEM_WB mem_wb;
     mem_wb.rd = ex_mem.rd;
     mem_wb.alu_result = ex_mem.alu_result;
-    if (ex_mem.mem_read == 1) {
-        mem_wb.mem_result = 0; //memory[ex_mem.alu_result];
-    } else if (ex_mem.mem_write == 1) {
-        //memory[ex_mem.alu_result] = ex_mem.rd;
+    mem_wb.mem_to_reg = ex_mem.mem_to_reg;
+    mem_wb.wb_src = ex_mem.wb_src;
+    if (ex_mem.mem_read) {
+        mem_wb.mem_result = memory[ex_mem.alu_result];
+    } else if (ex_mem.mem_write) {
+        memory[ex_mem.alu_result] = ex_mem.rd;
     }
     return mem_wb;
 }
 
-void WB(struct MEM_WB mem_wb) {
-    if (mem_wb.mem_to_reg == 1) {
-        if (mem_wb.wb_src == 0) {
-            regs[mem_wb.rd] = mem_wb.alu_result;
-        } else {
-            regs[mem_wb.rd] = mem_wb.mem_result;
-        }
+void WB( struct MEM_WB mem_wb) {
+    if (mem_wb.mem_to_reg && mem_wb.wb_src == MEM) {
+        regs[mem_wb.rd] = mem_wb.mem_result;
+    } 
+    else if (mem_wb.mem_to_reg && mem_wb.wb_src == ALU) {
+        regs[mem_wb.rd] = mem_wb.alu_result;
     }
-
 }
 
 string hexToBinary(string hex) {
