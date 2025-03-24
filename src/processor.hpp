@@ -35,6 +35,7 @@ enum WB_SRC {
 struct IF_ID {
     int pc;
     string instruction;
+    bool non_empty;
 };
 
 struct ID_EX {
@@ -47,6 +48,7 @@ struct ID_EX {
     int alu_src;
     int mem_read, mem_write, mem_to_reg;
     int wb_src;
+    bool non_empty;
 };
 
 struct EX_MEM {
@@ -57,12 +59,15 @@ struct EX_MEM {
     int mem_write;
     int mem_to_reg;
     int wb_src;
+    bool non_empty;
 };
 
 struct MEM_WB {
     int alu_result;
     int mem_result;
+    int pc;
     int wb_src;
     int rd;
     int mem_to_reg;
+    bool non_empty;
 };
