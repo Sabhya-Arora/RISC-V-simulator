@@ -98,6 +98,15 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
+            } else if (funct3 == 0) { // lb rs1
+                id_ex.mem_read = 1;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 1;
+                id_ex.wb_src = MEM;
+                id_ex.imm = binaryStringToInt(str.substr(0, 12));
+                id_ex.alu_op = ADD;
+                id_ex.alu_src = IMM;
+
             }
             if (l3.non_empty && l3.rd != 0 && l3.mem_to_reg && l3.rd == rs1) stall = true;
             if (l4.non_empty && l4.rd != 0 && l4.mem_to_reg && l4.rd == rs1) stall = true;
@@ -148,6 +157,13 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.wb_src = MEM;
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
+            } else if (funct3 == 0) {
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 1;
+                id_ex.mem_to_reg = 0;
+                id_ex.wb_src = MEM;
+                id_ex.alu_op = ADD;
+                id_ex.alu_src = IMM;
             }
             break;
         case 99: // B type
@@ -168,6 +184,19 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_src = IMM;
                 int target_pc = inst.pc + id_ex.imm/4;
                 if (regs[rs1] == regs[rs2]) {
+                    branch = true;
+                    pc = target_pc - 1;
+                    // cout<<"pc "<<pc<<endl;
+                }
+            } else if (funct3 == 5) { // bge
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 0;
+                id_ex.wb_src = MEM;
+                id_ex.alu_op = ADD;
+                id_ex.alu_src = IMM;
+                int target_pc = inst.pc + id_ex.imm/4;
+                if (regs[rs1] >= regs[rs2]) {
                     branch = true;
                     pc = target_pc - 1;
                     // cout<<"pc "<<pc<<endl;
@@ -276,11 +305,16 @@ int main(int argc, char * argv[]) {
     file = argv[1];
     int clk_cycle = atoi(argv[2]);
     FILE *fp = fopen(file, "r");
+    memory[0] = 4;
     char inp[100];
     while (fgets(inp, sizeof(inp), fp)) {
         int ind = 0;
         string mach_code = "";
         string assembly_code = "";
+        
+        while (inp[ind] == ' ') {
+            ind++;
+        }
         while (inp[ind] != ':') {
             ind++;
         }
@@ -378,10 +412,19 @@ int main(int argc, char * argv[]) {
         if (fetch[i] >= 0)
         display[fetch[i]][i] = "IF";
     }
+    cout<<setw(20)<<"Assembly";
+    for (int i = 0; i < clk_cycle; i++) {
+        cout<<";"<<setw(3)<<i;
+    }
     for (int i = 0; i < n; i++) {
         cout<<setw(20)<<assembly[i];
         for (int j = 0; j < clk_cycle; j++) {
-            cout<<";"<<setw(3)<<display[i][j];
+            if (j > 0) {
+                if (display[i][j] == display[i][j-1] && display[i][j] != " ") {
+                   cout<<";"<<setw(3)<<'-';
+                } else 
+                cout<<";"<<setw(3)<<display[i][j];
+            }
         }
         cout<<endl;
     }
