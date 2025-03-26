@@ -135,12 +135,10 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 0;
                 id_ex.mem_to_reg = 1;
-                id_ex.wb_src = ALU;
-                id_ex.alu_src = IMM;
-                id_ex.alu_op = ADD;
+                id_ex.wb_src = NEXT_PC;
+                id_ex.alu_op = NO_OP;
                 int target_pc = regs[rs1] + id_ex.imm;
                 branch = true;
-                regs[rd] = pc + 1;
                 pc = target_pc - 1;
             }
         break;
@@ -154,14 +152,12 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 1;
                 id_ex.mem_to_reg = 0;
-                id_ex.wb_src = MEM;
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
             } else if (funct3 == 0) {
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 1;
                 id_ex.mem_to_reg = 0;
-                id_ex.wb_src = MEM;
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
             }
@@ -173,15 +169,11 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 break;
             }
             id_ex.imm = binaryStringToInt(extract_B_imm(inst.instruction));
-            // cout<<id_ex.imm<<" eeded"<<endl;
             if (funct3 == 0) { // beq
-                // cout<<"ASDH";
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 0;
                 id_ex.mem_to_reg = 0;
-                id_ex.wb_src = MEM;
-                id_ex.alu_op = ADD;
-                id_ex.alu_src = IMM;
+                id_ex.alu_op = NO_OP;
                 int target_pc = inst.pc + id_ex.imm/4;
                 if (regs[rs1] == regs[rs2]) {
                     branch = true;
@@ -192,9 +184,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 0;
                 id_ex.mem_to_reg = 0;
-                id_ex.wb_src = MEM;
-                id_ex.alu_op = ADD;
-                id_ex.alu_src = IMM;
+                id_ex.alu_op = NO_OP;
                 int target_pc = inst.pc + id_ex.imm/4;
                 if (regs[rs1] >= regs[rs2]) {
                     branch = true;
@@ -208,11 +198,9 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
             id_ex.mem_read = 0;
             id_ex.mem_write = 0;
             id_ex.mem_to_reg = 1;
-            id_ex.wb_src = MEM;
-            id_ex.alu_op = ADD;
-            id_ex.alu_src = IMM;
+            id_ex.wb_src = NEXT_PC;
+            id_ex.alu_op = NO_OP;
             int target_pc = inst.pc + id_ex.imm/4;
-            regs[rd] = inst.pc + 1;
             pc = target_pc - 1;
             branch = true;
     }
@@ -232,6 +220,7 @@ struct EX_MEM EX( struct ID_EX id_ex) {
     ex_mem.mem_write = id_ex.mem_write;
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
     ex_mem.wb_src = id_ex.wb_src;
+    if(id_ex.alu_op == NO_OP) return ex_mem;
     int operand1 = regs[id_ex.rs1];
     int operand2 = (id_ex.alu_src == RS2) ? regs[id_ex.rs2] : id_ex.imm;
     switch (id_ex.alu_op) {
@@ -267,12 +256,17 @@ struct MEM_WB DM ( struct EX_MEM ex_mem) {
 
 void WB( struct MEM_WB mem_wb) {
     if (mem_wb.non_empty)
-    {if (mem_wb.mem_to_reg && mem_wb.wb_src == MEM) {
-        regs[mem_wb.rd] = mem_wb.mem_result;
-    } 
-    else if (mem_wb.mem_to_reg && mem_wb.wb_src == ALU) {
-        regs[mem_wb.rd] = mem_wb.alu_result;
-    }}
+    {
+        if (mem_wb.mem_to_reg && mem_wb.wb_src == MEM) {
+            regs[mem_wb.rd] = mem_wb.mem_result;
+        } 
+        else if (mem_wb.mem_to_reg && mem_wb.wb_src == ALU) {
+            regs[mem_wb.rd] = mem_wb.alu_result;
+        } 
+        else if (mem_wb.mem_to_reg && mem_wb.wb_src == NEXT_PC) {
+            regs[mem_wb.rd] = mem_wb.pc+1;
+        }  
+    }
 }
 
 string hexToBinary(string hex) {

@@ -25,12 +25,16 @@ enum ALU_OP {
 
 enum ALU_SRC {
     RS2 = 0,
+    RS1,
+    L4,
+    L5,
     IMM
 };
 
 enum WB_SRC {
     ALU = 0,
-    MEM
+    MEM,
+    NEXT_PC
 };
 
 struct IF_ID {
