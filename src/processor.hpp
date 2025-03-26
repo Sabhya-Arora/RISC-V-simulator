@@ -19,7 +19,8 @@ enum ALU_OP {
     DIV,
     DIVU,
     REM,
-    REMU
+    REMU,
+    NO_OP
 };
 
 enum ALU_SRC {
