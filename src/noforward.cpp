@@ -463,15 +463,9 @@ int main(int argc, char * argv[]) {
         assembly.push_back(assembly_code);
     }
     int n = program.size();
-    // for (int i = 0; i < n; i++) {
-    //     cout<<program[i]<<endl;
-    // }
-    bool finished = false;
-    // cout<<pc<<endl;
+    regs[2] = 2147483632;
     vector<int> fetch(clk_cycle, -1), decode(clk_cycle, -1), execute(clk_cycle, -1), mem(clk_cycle, -1), writeback(clk_cycle, -1);
     for (int i = 0; i < clk_cycle; i++) {
-        // cout<<fetch[0]<<endl;
-        // cout<<"PC "<<pc<<endl;
         bool stall = false;
         bool branch = false;
         //IF
