@@ -354,9 +354,11 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                     id_ex.mem_src = L5_PC;
                 }
                 if(l3.wb_src == MEM){
+
                     id_ex.mem_src = L5_MEM;
                 }
             }
+            
             break;
         case 99: // B type
            { int rs1_val = regs[rs1];
@@ -463,6 +465,8 @@ struct EX_MEM EX( struct ID_EX id_ex) {
     ex_mem.mem_access = id_ex.mem_access;
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
     ex_mem.wb_src = id_ex.wb_src;
+    ex_mem.mem_src = id_ex.mem_src;
+    ex_mem.rs2_val = id_ex.rs2_val;
     if(id_ex.alu_op == NO_OP) return ex_mem;
     int operand1, operand2;
     switch (id_ex.alu_src1) {
@@ -569,6 +573,7 @@ void WB( struct MEM_WB mem_wb) {
             regs[mem_wb.rd] = mem_wb.pc+1;
         }  
     }
+    regs[0] = 0;
 }
 
 string hexToBinary(string hex) {
@@ -690,6 +695,11 @@ int main(int argc, char * argv[]) {
         //     cout<<"HELO"<<pc<<endl;
         //     // finished = true;
         // };
+        // for(int i = 0; i<32; i++){
+        //     cout<<regs[i]<<" ";
+        // }
+        // cout<<endl;
+        // cout << memory[0]<<endl;
     }
     // cout<<"OUT"<<endl;
     // cout<<n<<endl;
