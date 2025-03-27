@@ -58,6 +58,7 @@ struct ID_EX {
     int mem_read, mem_write, mem_to_reg, mem_src;
     int wb_src;
     bool non_empty;
+    bool mem_access;
 };
 
 struct EX_MEM {
@@ -71,6 +72,7 @@ struct EX_MEM {
     int mem_src;
     int wb_src;
     bool non_empty;
+    bool mem_access;
 };
 
 struct MEM_WB {

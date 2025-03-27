@@ -26,8 +26,6 @@ enum ALU_OP {
 enum ALU_SRC {
     RS2 = 0,
     RS1,
-    L4,
-    L5,
     IMM
 };
 
@@ -54,6 +52,7 @@ struct ID_EX {
     int mem_read, mem_write, mem_to_reg;
     int wb_src;
     bool non_empty;
+    bool memaccess;
 };
 
 struct EX_MEM {
@@ -66,6 +65,7 @@ struct EX_MEM {
     int mem_to_reg;
     int wb_src;
     bool non_empty;
+    bool memaccess;
 };
 
 struct MEM_WB {

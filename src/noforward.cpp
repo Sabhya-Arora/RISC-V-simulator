@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "processor.hpp"
+#include "noforward.hpp"
 using namespace std;
 #include <string>
 #include <bitset>
@@ -49,6 +49,29 @@ struct ID_EX l3;
 struct EX_MEM l4;
 struct MEM_WB l5;
 int pc = 0;
+void mem_write(bool mem_access, int start_address, int value) {
+    if (mem_access) { // true implies word
+        memory[start_address] = value % 256;
+        memory[start_address + 1] = (value >> 8) % 256;
+        memory[start_address + 2] = (value >> 16) % 256;
+        memory[start_address + 3] = (value >> 24) % 256;
+    } else {
+        memory[start_address] = value % 256;
+    }
+}
+
+int mem_read(bool mem_access, int start_address) {
+    int value = 0;
+    if (mem_access) { // true implies word
+        value = memory[start_address + 3] << 24;
+        value += memory[start_address + 2] << 16;
+        value += memory[start_address + 1] << 8;
+        value += memory[start_address];
+    } else {
+        value = memory[start_address];
+    }
+    return value;
+}
 string IF(int pc) {
     return program[pc];
 }
@@ -98,6 +121,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
+                id_ex.memaccess = true;
             } else if (funct3 == 0) { // lb rs1
                 id_ex.mem_read = 1;
                 id_ex.mem_write = 0;
@@ -106,7 +130,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
-
+                id_ex.memaccess = false;
             }
             if (l3.non_empty && l3.rd != 0 && l3.mem_to_reg && l3.rd == rs1) stall = true;
             if (l4.non_empty && l4.rd != 0 && l4.mem_to_reg && l4.rd == rs1) stall = true;
@@ -154,12 +178,14 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_to_reg = 0;
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
-            } else if (funct3 == 0) {
+                id_ex.memaccess = true;
+            } else if (funct3 == 0) { //sb
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 1;
                 id_ex.mem_to_reg = 0;
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
+                id_ex.memaccess = false;
             }
             break;
         case 99: // B type
@@ -219,6 +245,7 @@ struct EX_MEM EX( struct ID_EX id_ex) {
     ex_mem.mem_read = id_ex.mem_read;
     ex_mem.mem_write = id_ex.mem_write;
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
+    ex_mem.memaccess = id_ex.memaccess;
     ex_mem.wb_src = id_ex.wb_src;
     if(id_ex.alu_op == NO_OP) return ex_mem;
     int operand1 = id_ex.rs1_val;
@@ -247,9 +274,9 @@ struct MEM_WB DM ( struct EX_MEM ex_mem) {
     mem_wb.wb_src = ex_mem.wb_src;
     mem_wb.pc = ex_mem.pc;
     if (ex_mem.mem_read) {
-        mem_wb.mem_result = memory[ex_mem.alu_result];
+        mem_wb.mem_result = mem_read(ex_mem.memaccess, ex_mem.alu_result);
     } else if (ex_mem.mem_write) {
-        memory[ex_mem.alu_result] = ex_mem.rs2_val;
+        mem_write(ex_mem.memaccess, ex_mem.alu_result, ex_mem.rs2_val);
     }
     return mem_wb;
 }

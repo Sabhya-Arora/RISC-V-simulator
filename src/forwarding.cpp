@@ -49,6 +49,29 @@ struct ID_EX l3;
 struct EX_MEM l4;
 struct MEM_WB l5;
 int pc = 0;
+void mem_write(bool mem_access, int start_address, int value) {
+    if (mem_access) { // true implies word
+        memory[start_address] = value % 256;
+        memory[start_address + 1] = (value >> 8) % 256;
+        memory[start_address + 2] = (value >> 16) % 256;
+        memory[start_address + 3] = (value >> 24) % 256;
+    } else {
+        memory[start_address] = value % 256;
+    }
+}
+
+int mem_read(bool mem_access, int start_address) {
+    int value = 0;
+    if (mem_access) { // true implies word
+        value = memory[start_address + 3] << 24;
+        value += memory[start_address + 2] << 16;
+        value += memory[start_address + 1] << 8;
+        value += memory[start_address];
+    } else {
+        value = memory[start_address];
+    }
+    return value;
+}
 string IF(int pc) {
     return program[pc];
 }
@@ -144,6 +167,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_op = ADD;
                 id_ex.alu_src1 = RS1;
                 id_ex.alu_src2 = IMM;
+                id_ex.mem_access = true;
             } else if (funct3 == 0) { // lb rs1
                 id_ex.mem_read = 1;
                 id_ex.mem_write = 0;
@@ -153,6 +177,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_op = ADD;
                 id_ex.alu_src1 = RS1;
                 id_ex.alu_src2 = IMM;
+                id_ex.mem_access = false;
             }
             if(l3.non_empty && l3.mem_to_reg && l3.rd!=0 && l3.rd==rs1){
                 if(l3.wb_src == ALU){
@@ -257,6 +282,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_src1 = RS1;
                 id_ex.alu_src2 = IMM;
                 id_ex.mem_src = RS2;
+                id_ex.mem_access = true;
             } else if (funct3 == 0) {
                 id_ex.mem_read = 0;
                 id_ex.mem_write = 1;
@@ -264,6 +290,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_op = ADD;
                 id_ex.alu_src1 = RS1;
                 id_ex.alu_src2 = IMM;
+                id_ex.mem_access = false;
             }
             if(l3.non_empty && l3.mem_to_reg && l3.rd!=0 && l3.rd==rs1){
                 if(l3.wb_src == ALU){
@@ -395,6 +422,7 @@ struct EX_MEM EX( struct ID_EX id_ex) {
     ex_mem.rd = id_ex.rd;
     ex_mem.mem_read = id_ex.mem_read;
     ex_mem.mem_write = id_ex.mem_write;
+    ex_mem.mem_access = id_ex.mem_access;
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
     ex_mem.wb_src = id_ex.wb_src;
     if(id_ex.alu_op == NO_OP) return ex_mem;
@@ -460,19 +488,19 @@ struct MEM_WB DM ( struct EX_MEM ex_mem) {
     mem_wb.wb_src = ex_mem.wb_src;
     mem_wb.pc = ex_mem.pc;
     if (ex_mem.mem_read) {
-        mem_wb.mem_result = memory[ex_mem.alu_result];
+        mem_wb.mem_result = mem_read(ex_mem.mem_access, ex_mem.alu_result);
     } else if (ex_mem.mem_write) {
         if(ex_mem.mem_src == L5_ALU){
-            memory[ex_mem.alu_result] = l5.alu_result;
+            mem_write(ex_mem.mem_access, ex_mem.alu_result, l5.alu_result);
         }
         else if(ex_mem.mem_src == L5_PC){
-            memory[ex_mem.alu_result] = l5.pc + 1;
+            mem_write(ex_mem.mem_access, ex_mem.alu_result, l5.pc+1);
         }
         else if(ex_mem.mem_src == L5_MEM){
-            memory[ex_mem.alu_result] = l5.mem_result;
+            mem_write(ex_mem.mem_access, ex_mem.alu_result, l5.mem_result);
         }
         else{
-            memory[ex_mem.alu_result] = ex_mem.rs2_val;
+            mem_write(ex_mem.mem_access, ex_mem.alu_result, ex_mem.rs2_val);
         }
     }
     return mem_wb;
