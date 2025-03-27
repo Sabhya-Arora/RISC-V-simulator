@@ -242,6 +242,29 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_src1 = RS1;
                 id_ex.alu_src2 = IMM;
                 id_ex.alu_op = ADD;
+            } else if (funct3 == 2) { // slti
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 1;
+                id_ex.wb_src = ALU;
+                id_ex.imm = binaryStringToInt(str.substr(0, 12));
+                id_ex.alu_src1 = RS1;
+                id_ex.alu_src2 = IMM;
+                id_ex.alu_op = SLT;
+            } else if (funct3 == 1) { // slli
+                if (funct7 == 0)
+                {id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 1;
+                id_ex.wb_src = ALU;
+                id_ex.rs2_val = stoi(str.substr(7, 5), nullptr, 2);
+                id_ex.alu_src1 = RS1;
+                id_ex.alu_src2 = RS2;
+                id_ex.alu_op = SLL;
+            }   else {
+                cout<<"Unsupported instruction"<<endl;
+                exit(1);
+            }
             } else {
                 cout<<"Unsupported instruction"<<endl;
                 exit(1);
