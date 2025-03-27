@@ -5,12 +5,12 @@ CXX = g++
 CXXFLAGS = -Wall -Wextra -O2 -std=c++17
 
 # Executable names
-FORWARD_EXEC = src/forward
-NOFORWARD_EXEC = src/noforward
+FORWARD_EXEC = forward
+NOFORWARD_EXEC = noforward
 
 # Source files
-FORWARD_SRC = src/forwarding.cpp
-NOFORWARD_SRC = src/noforward.cpp
+FORWARD_SRC = forwarding.cpp
+NOFORWARD_SRC = noforward.cpp
 
 # Build rules
 all: $(FORWARD_EXEC) $(NOFORWARD_EXEC)
