@@ -137,7 +137,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_to_reg = 1;
                 id_ex.wb_src = NEXT_PC;
                 id_ex.alu_op = NO_OP;
-                int target_pc = regs[rs1] + id_ex.imm;
+                int target_pc = id_ex.rs1_val + id_ex.imm;
                 branch = true;
                 pc = target_pc - 1;
             }
@@ -175,7 +175,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_to_reg = 0;
                 id_ex.alu_op = NO_OP;
                 int target_pc = inst.pc + id_ex.imm/4;
-                if (regs[rs1] == regs[rs2]) {
+                if (id_ex.rs1_val == id_ex.rs2_val) {
                     branch = true;
                     pc = target_pc - 1;
                     // cout<<"pc "<<pc<<endl;
@@ -186,7 +186,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.mem_to_reg = 0;
                 id_ex.alu_op = NO_OP;
                 int target_pc = inst.pc + id_ex.imm/4;
-                if (regs[rs1] >= regs[rs2]) {
+                if (id_ex.rs1_val >= id_ex.rs2_val) {
                     branch = true;
                     pc = target_pc - 1;
                     // cout<<"pc "<<pc<<endl;
@@ -299,7 +299,6 @@ int main(int argc, char * argv[]) {
     file = argv[1];
     int clk_cycle = atoi(argv[2]);
     FILE *fp = fopen(file, "r");
-    memory[0] = 4;
     char inp[100];
     while (fgets(inp, sizeof(inp), fp)) {
         int ind = 0;
@@ -332,12 +331,14 @@ int main(int argc, char * argv[]) {
         assembly.push_back(assembly_code);
     }
     int n = program.size();
-    for (int i = 0; i < n; i++) {
-        cout<<program[i]<<endl;
-    }
+    // for (int i = 0; i < n; i++) {
+    //     cout<<program[i]<<endl;
+    // }
     bool finished = false;
+    // cout<<pc<<endl;
     vector<int> fetch(clk_cycle, -1), decode(clk_cycle, -1), execute(clk_cycle, -1), mem(clk_cycle, -1), writeback(clk_cycle, -1);
     for (int i = 0; i < clk_cycle; i++) {
+        // cout<<fetch[0]<<endl;
         // cout<<"PC "<<pc<<endl;
         bool stall = false;
         bool branch = false;
@@ -360,7 +361,7 @@ int main(int argc, char * argv[]) {
         if (l2.non_empty)
         decode[i] = l2.pc;
         struct ID_EX nextl3 = ID(l2, stall, branch);
-        cout<<pc<<" "<<stall<<endl;
+        // cout<<pc<<" "<<stall<<endl;
         // cout<<l2.instruction<<" "<<stall<<endl;
         
         //EX
@@ -418,7 +419,7 @@ int main(int argc, char * argv[]) {
                    cout<<";"<<setw(3)<<'-';
                 } else 
                 cout<<";"<<setw(3)<<display[i][j];
-            }
+            } else cout<<";"<<setw(3)<<display[i][j];
         }
         cout<<endl;
     }
