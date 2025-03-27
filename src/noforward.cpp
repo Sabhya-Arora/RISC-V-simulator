@@ -107,7 +107,13 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                     id_ex.alu_op = ADD;
                 } else if (funct7 == 32) {  //sub rs1, rs2
                     id_ex.alu_op = SUB;
+                } else {
+                    cout<<"Unsupported instruction"<<endl;
+                    exit(1);
                 }
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                    exit(1);
             }
             if (l3.non_empty && l3.rd != 0 && l3.mem_to_reg && (l3.rd == rs1 || l3.rd==rs2)) stall = true;
             if (l4.non_empty && l4.rd != 0 && l4.mem_to_reg && (l4.rd == rs1 || l4.rd==rs2)) stall = true;
@@ -131,6 +137,9 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
                 id_ex.memaccess = false;
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                    exit(1);
             }
             if (l3.non_empty && l3.rd != 0 && l3.mem_to_reg && l3.rd == rs1) stall = true;
             if (l4.non_empty && l4.rd != 0 && l4.mem_to_reg && l4.rd == rs1) stall = true;
@@ -144,6 +153,9 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_src = IMM;
                 id_ex.alu_op = ADD;
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                    exit(1);
             }
             if (l3.non_empty && l3.rd != 0 && l3.mem_to_reg && l3.rd == rs1 ) stall = true;
             if (l4.non_empty && l4.rd != 0 && l4.mem_to_reg && l4.rd == rs1 ) stall = true;
@@ -164,6 +176,9 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 int target_pc = id_ex.rs1_val + id_ex.imm;
                 branch = true;
                 pc = target_pc - 1;
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                exit(1);
             }
         break;
         case 35: //S-type
@@ -186,6 +201,9 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.alu_op = ADD;
                 id_ex.alu_src = IMM;
                 id_ex.memaccess = false;
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                    exit(1);
             }
             break;
         case 99: // B type
@@ -217,10 +235,13 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                     pc = target_pc - 1;
                     // cout<<"pc "<<pc<<endl;
                 }
+            } else {
+                cout<<"Unsupported instruction"<<endl;
+                exit(1);
             }
             break;
         case 111: // jal type
-            id_ex.imm = binaryStringToInt(extract_j_imm(inst.instruction));
+            {id_ex.imm = binaryStringToInt(extract_j_imm(inst.instruction));
             id_ex.mem_read = 0;
             id_ex.mem_write = 0;
             id_ex.mem_to_reg = 1;
@@ -229,6 +250,10 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
             int target_pc = inst.pc + id_ex.imm/4;
             pc = target_pc - 1;
             branch = true;
+            break;}
+        default:
+            cout<<"Unsupported instruction"<<endl;
+            exit(1);
     }
     return id_ex;
 }
