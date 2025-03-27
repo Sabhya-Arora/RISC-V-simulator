@@ -102,16 +102,27 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
             id_ex.mem_write = 0;
             id_ex.mem_to_reg = 1;
             id_ex.wb_src = ALU;
-            if (funct3 == 0) {
-                if (funct7 == 0) { //add rs1, rs2
+            if (funct7 == 0) {
+                if (funct3 == 0) { //add rs1, rs2
                     id_ex.alu_op = ADD;
-                } else if (funct7 == 32) {  //sub rs1, rs2
+                } else if (funct3 == 1) {  //sll rs1, rs2
+                    id_ex.alu_op = SLL;
+                } else if (funct3 == 2) {
+                    id_ex.alu_op = SLT;
+                } else if (funct3 == 7) {
+                    id_ex.alu_op = AND;
+                }else {
+                    cout<<"Unsupported instruction"<<endl;
+                    exit(1);
+                }
+            } else if (funct7 == 32) {
+                if (funct3 == 0) { // sub
                     id_ex.alu_op = SUB;
                 } else {
                     cout<<"Unsupported instruction"<<endl;
                     exit(1);
                 }
-            } else {
+            }else {
                 cout<<"Unsupported instruction"<<endl;
                     exit(1);
             }
@@ -153,7 +164,15 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_src = IMM;
                 id_ex.alu_op = ADD;
-            } else {
+            } else if (funct3 == 2) { // slti
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 1;
+                id_ex.wb_src = ALU;
+                id_ex.imm = binaryStringToInt(str.substr(0, 12));
+                id_ex.alu_src = IMM;
+                id_ex.alu_op = SLT;
+            }else {
                 cout<<"Unsupported instruction"<<endl;
                     exit(1);
             }
@@ -235,7 +254,29 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                     pc = target_pc - 1;
                     // cout<<"pc "<<pc<<endl;
                 }
-            } else {
+            } else if (funct3 == 1) { // bne
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 0;
+                id_ex.alu_op = NO_OP;
+                int target_pc = inst.pc + id_ex.imm/4;
+                if (id_ex.rs1_val != id_ex.rs2_val) {
+                    branch = true;
+                    pc = target_pc - 1;
+                    // cout<<"pc "<<pc<<endl;
+                }
+            } else if (funct3 == 4) { // blt
+                id_ex.mem_read = 0;
+                id_ex.mem_write = 0;
+                id_ex.mem_to_reg = 0;
+                id_ex.alu_op = NO_OP;
+                int target_pc = inst.pc + id_ex.imm/4;
+                if (id_ex.rs1_val < id_ex.rs2_val) {
+                    branch = true;
+                    pc = target_pc - 1;
+                    // cout<<"pc "<<pc<<endl;
+                }
+            }else {
                 cout<<"Unsupported instruction"<<endl;
                 exit(1);
             }
@@ -281,6 +322,18 @@ struct EX_MEM EX( struct ID_EX id_ex) {
             break;
         case SUB: 
             ex_mem.alu_result = operand1 - operand2;
+            break;
+        case SLT:
+            ex_mem.alu_result = (operand1 < operand2) ? 1 : 0;
+            break;
+        case SLL:
+            ex_mem.alu_result = operand1 << operand2;
+            break;
+        case AND:
+            ex_mem.alu_result = operand1 & operand2;
+            break;
+        case OR:
+            ex_mem.alu_result = operand1 | operand2;
             break;
     }
     return ex_mem;
