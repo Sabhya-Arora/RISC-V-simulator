@@ -23,7 +23,7 @@ The processor follows the classic **5-stage pipeline model**:
   - Inserts **NOPs** (bubbles) to delay execution until data is available.
 
 ### **Instruction Set & ALU Operations**
-- Supports basic arithmetic (`ADD`, `SUB`), bitwise (`AND`, `OR`), shift (`SLL`), and comparison (`SLT`).
+- Supports basic arithmetic (`ADD`, `SUB`, `MUL`), bitwise (`AND`, `OR`), shift (`SLL`), and comparison (`SLT`).
 - Also supports branch instructions (`BEQ`, `BGE`, `BLT`, `BNE`) and jump instructions (`JALR`, `JAL`)
 
 ### **Branch Resolution**
