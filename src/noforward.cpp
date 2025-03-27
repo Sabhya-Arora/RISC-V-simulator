@@ -495,6 +495,11 @@ int main(int argc, char * argv[]) {
         //     cout<<"HELO"<<pc<<endl;
         //     // finished = true;
         // };
+        cout<<i<<" ";
+        for (int i = 0; i < 32; i++) {
+            cout<<regs[i]<<" ";
+        }
+        cout<<endl;
     }
     // cout<<"OUT"<<endl;
     // cout<<n<<endl;
@@ -516,6 +521,7 @@ int main(int argc, char * argv[]) {
     for (int i = 0; i < clk_cycle; i++) {
         cout<<";"<<setw(3)<<i;
     }
+    cout<<endl;
     for (int i = 0; i < n; i++) {
         cout<<setw(20)<<assembly[i];
         for (int j = 0; j < clk_cycle; j++) {

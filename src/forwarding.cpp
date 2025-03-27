@@ -711,6 +711,7 @@ int main(int argc, char * argv[]) {
     for (int i = 0; i < clk_cycle; i++) {
         cout<<";"<<setw(3)<<i;
     }
+    cout<<endl;
     for (int i = 0; i < n; i++) {
         cout<<setw(20)<<assembly[i];
         for (int j = 0; j < clk_cycle; j++) {
