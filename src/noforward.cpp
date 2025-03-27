@@ -68,8 +68,8 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
     int funct7 = stoi(str.substr(0, 7), nullptr, 2);
     int opcode = stoi(str.substr(25, 7), nullptr, 2);
     id_ex.imm = 0;
-    id_ex.rs1 = rs1;
-    id_ex.rs2 = rs2;
+    id_ex.rs1_val = regs[rs1];
+    id_ex.rs2_val= regs[rs2];
     id_ex.rd = rd;
     id_ex.pc = inst.pc;
     switch (opcode) {
@@ -221,8 +221,8 @@ struct EX_MEM EX( struct ID_EX id_ex) {
     ex_mem.mem_to_reg = id_ex.mem_to_reg;
     ex_mem.wb_src = id_ex.wb_src;
     if(id_ex.alu_op == NO_OP) return ex_mem;
-    int operand1 = regs[id_ex.rs1];
-    int operand2 = (id_ex.alu_src == RS2) ? regs[id_ex.rs2] : id_ex.imm;
+    int operand1 = id_ex.rs1_val;
+    int operand2 = (id_ex.alu_src == RS2) ? id_ex.rs2_val : id_ex.imm;
     switch (id_ex.alu_op) {
         case ADD:
             ex_mem.alu_result = operand1 + operand2;
@@ -249,7 +249,7 @@ struct MEM_WB DM ( struct EX_MEM ex_mem) {
     if (ex_mem.mem_read) {
         mem_wb.mem_result = memory[ex_mem.alu_result];
     } else if (ex_mem.mem_write) {
-        memory[ex_mem.alu_result] = ex_mem.rd;
+        memory[ex_mem.alu_result] = ex_mem.rs2_val;
     }
     return mem_wb;
 }

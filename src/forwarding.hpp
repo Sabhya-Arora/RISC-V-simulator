@@ -27,7 +27,10 @@ enum ALU_SRC {
     RS2 = 0,
     RS1,
     L4,
-    L5,
+    L5_ALU,
+    L5_MEM,
+    L4_PC,
+    L5_PC,
     IMM
 };
 
@@ -50,8 +53,9 @@ struct ID_EX {
     int rd;
     int imm;
     int pc;
-    int alu_src;
-    int mem_read, mem_write, mem_to_reg;
+    int alu_src1;
+    int alu_src2;
+    int mem_read, mem_write, mem_to_reg, mem_src;
     int wb_src;
     bool non_empty;
 };
@@ -64,6 +68,7 @@ struct EX_MEM {
     int mem_read;
     int mem_write;
     int mem_to_reg;
+    int mem_src;
     int wb_src;
     bool non_empty;
 };
