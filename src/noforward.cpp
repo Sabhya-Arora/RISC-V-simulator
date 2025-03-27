@@ -122,7 +122,16 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                     cout<<"Unsupported instruction"<<endl;
                     exit(1);
                 }
-            }else {
+            } else if (funct7 == 1) {
+                if (funct3 == 0) {
+                    id_ex.alu_op = MUL;
+                }
+                else {
+                    cout<<"Unsupported instruction"<<endl;
+                    exit(1);
+                }
+            }
+            else {
                 cout<<"Unsupported instruction"<<endl;
                     exit(1);
             }
@@ -172,7 +181,7 @@ struct ID_EX ID(struct IF_ID inst, bool &stall, bool &branch) {
                 id_ex.imm = binaryStringToInt(str.substr(0, 12));
                 id_ex.alu_src = IMM;
                 id_ex.alu_op = SLT;
-            }else {
+            } else {
                 cout<<"Unsupported instruction"<<endl;
                     exit(1);
             }
@@ -335,6 +344,9 @@ struct EX_MEM EX( struct ID_EX id_ex) {
             break;
         case OR:
             ex_mem.alu_result = operand1 | operand2;
+            break;
+        case MUL:
+            ex_mem.alu_result = operand1 * operand2;
             break;
     }
     return ex_mem;
